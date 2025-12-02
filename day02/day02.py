@@ -17,7 +17,7 @@ def part1(s: str) -> bool:
 
 
 def part2(s: str) -> bool:
-    for substr_length in range(len(s) // 2, 0, -1):
+    for substr_length in range(1, len(s) // 2 + 1):
         if len(s) % substr_length != 0:
             continue
         subs = [s[i : i + substr_length] for i in range(0, len(s), substr_length)]
