@@ -14,25 +14,19 @@ func parseInput(raw: String) -> [[Bool]] {
   }
 }
 
-func solve(grid: [[Bool]]) -> (Int, [(Int, Int)]) {
-  var totalSpots = 0
-  var spots: [(Int, Int)] = []
-  for row in 0..<grid.count {
-    for col in 0..<grid[0].count {
-      let window = (-1...1).map { dr in
+func solve(grid: [[Bool]]) -> [(Int, Int)] {
+  (0..<grid.count).flatMap { row in
+    (0..<grid[0].count).compactMap { col in
+      let window = (-1...1).flatMap { dr in
         (-1...1).map { dc in
           let r = row + dr
           let c = col + dc
           return (r >= 0 && r < grid.count && c >= 0 && c < grid[0].count) ? grid[r][c] : false
         }
       }
-      if window[1][1] && (window.flatMap { $0 }.filter { $0 }.count) < 5 {
-        totalSpots += 1
-        spots.append((row, col))
-      }
+      return (window[4] && window.filter { $0 }.count < 5) ? (row, col) : nil
     }
   }
-  return (totalSpots, spots)
 }
 
 func updateGrid(grid: [[Bool]], toRemove: [(Int, Int)]) -> [[Bool]] {
@@ -43,22 +37,15 @@ func updateGrid(grid: [[Bool]], toRemove: [(Int, Int)]) -> [[Bool]] {
   return newGrid
 }
 
-func solve2(grid: [[Bool]]) -> Int {
-  var newGrid = grid
-  var totalTotalSpots = 0
-  var removed = true
-  repeat {
-    let (totalSpots, spots) = solve(grid: newGrid)
-    totalTotalSpots += totalSpots
-    newGrid = updateGrid(grid: newGrid, toRemove: spots)
-    removed = totalSpots > 0
-  } while removed
-  return totalTotalSpots
+func solve2(grid: [[Bool]], acc: Int = 0) -> Int {
+  let spots = solve(grid: grid)
+  if spots.count == 0 { return acc }
+  return solve2(grid: updateGrid(grid: grid, toRemove: spots), acc: acc + spots.count)
 }
 
 let input = readInput()
 let parsed = parseInput(raw: input)
 let solution = solve(grid: parsed)
-print(solution.0)
+print(solution.count)
 let solution2 = solve2(grid: parsed)
 print(solution2)
