@@ -50,7 +50,7 @@ func solve2(ids: [ID]) -> Int {
   let sorted = ids.filter { id in id.1 != RangeType.ingredient }.sorted {
     ($0.0, $0.1) < ($1.0, $1.1)
   }
-  return sorted.reduce(into: (totalFresh: 0, including: 0, firstStarted: Int?.none)) {state, id in
+  return sorted.reduce(into: (totalFresh: 0, including: 0, firstStarted: Int?.none)) { state, id in
     switch id.1 {
     case .start:
       state.including += 1
