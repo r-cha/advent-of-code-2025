@@ -34,48 +34,39 @@ func parseInput(raw: String) -> [ID] {
 
 func solve(ids: [ID]) -> Int {
   let sorted = ids.sorted { ($0.0, $0.1) < ($1.0, $1.1) }
-  var totalFresh = 0
-  var including = 0
-  for id in sorted {
+  return sorted.reduce(into: (totalFresh: 0, including: 0)) { state, id in
     switch id.1 {
     case .ingredient:
-      if including > 0 {
-        totalFresh += 1
-      }
+      if state.including > 0 { state.totalFresh += 1 }
     case .start:
-      including += 1
+      state.including += 1
     case .end:
-      including -= 1
+      state.including -= 1
     }
-  }
-  return totalFresh
+  }.totalFresh
 }
 
 func solve2(ids: [ID]) -> Int {
   let sorted = ids.filter { id in id.1 != RangeType.ingredient }.sorted {
     ($0.0, $0.1) < ($1.0, $1.1)
   }
-  var totalFresh = 0
-  var including = 0
-  var firstStarted: Int? = nil
-  for id in sorted {
+  return sorted.reduce(into: (totalFresh: 0, including: 0, firstStarted: Int?.none)) {state, id in
     switch id.1 {
     case .start:
-      including += 1
-      if including == 1 {
-        firstStarted = id.0
+      state.including += 1
+      if state.including == 1 {
+        state.firstStarted = id.0
       }
     case .end:
-      including -= 1
-      if including == 0 {
-        totalFresh += id.0 + 1 - firstStarted!
-        firstStarted = nil
+      state.including -= 1
+      if state.including == 0 {
+        state.totalFresh += id.0 + 1 - state.firstStarted!
+        state.firstStarted = nil
       }
     default:
       break
     }
-  }
-  return totalFresh
+  }.totalFresh
 }
 
 let input = readInput()
