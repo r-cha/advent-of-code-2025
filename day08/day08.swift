@@ -13,14 +13,6 @@ struct Point3: Hashable, CustomStringConvertible {
   var description: String {
     "\(x),\(y),\(z)"
   }
-
-  subscript(_ axis: Int) -> Int {
-    switch axis {
-    case 0: return x
-    case 1: return y
-    default: return z
-    }
-  }
 }
 
 func parseInput(_ raw: String) -> [Point3] {
