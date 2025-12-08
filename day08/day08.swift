@@ -70,10 +70,7 @@ func distance(_ a: Point3, _ b: Point3) -> Double {
   return sqrt((dx * dx) + (dy * dy) + (dz * dz))
 }
 
-func buildCircuits(_ points: [Point3], connectionsToMake: Int) -> [[Point3]] {
-  let uf = UnionFind()
-
-  // Pre-compute all pairwise distances and sort by distance
+func calcAllDistances(_ points: [Point3]) -> [(Double, Point3, Point3)] {
   var allPairs: [(Double, Point3, Point3)] = []
   for i in 0..<points.count {
     for j in (i + 1)..<points.count {
@@ -81,19 +78,41 @@ func buildCircuits(_ points: [Point3], connectionsToMake: Int) -> [[Point3]] {
     }
   }
   allPairs.sort { $0.0 < $1.0 }
+  return allPairs
+}
+
+func buildCircuits(_ points: [Point3], connectionsToMake: Int) -> [[Point3]] {
+  let uf = UnionFind()
+  let allPairs = calcAllDistances(points)
 
   var attemptsCount = 0
   for (_, a, b) in allPairs {
     if attemptsCount >= connectionsToMake { break }
     attemptsCount += 1
     if uf.connected(a, b) {
-      print("Skipped \(a)\tand \(b) (already connected)")
       continue
     }
     uf.union(a, b)
-    print("Connected \(a)\tand \(b)")
   }
   return uf.groups().sorted { $0.count > $1.count }
+}
+
+func connectAll(_ points: [Point3]) -> (Point3, Point3) {
+  let uf = UnionFind()
+  let allPairs = calcAllDistances(points)
+
+  var lastConnection: (Point3, Point3)?
+  var circuitCount = points.count
+  for (_, a, b) in allPairs {
+    if circuitCount == 1 { break }
+    if uf.connected(a, b) {
+      continue
+    }
+    uf.union(a, b)
+    lastConnection = (a, b)
+    circuitCount -= 1
+  }
+  return lastConnection!
 }
 
 func solve(_ points: [Point3]) -> Int {
@@ -102,6 +121,13 @@ func solve(_ points: [Point3]) -> Int {
   return circuits.prefix(3).map(\.count).reduce(1, *)
 }
 
+func solve2(_ points: [Point3]) -> Int {
+  let (a, b) = connectAll(points)
+  print("Final connection: \(a) and \(b)")
+  return a.x * b.x
+}
+
 let raw = readInput()
 let points = parseInput(raw)
 print(solve(points))
+print(solve2(points))
