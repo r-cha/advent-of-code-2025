@@ -73,7 +73,7 @@ struct Registers: Hashable {
 struct Rational: CustomStringConvertible {
   var num: Int
   var den: Int
-  
+
   init(_ n: Int, _ d: Int = 1) {
     precondition(d != 0)
     let g = Self.gcd(abs(n), abs(d))
@@ -81,11 +81,11 @@ struct Rational: CustomStringConvertible {
     num = sign * n / g
     den = sign * d / g
   }
-  
+
   private static func gcd(_ a: Int, _ b: Int) -> Int {
     b == 0 ? a : gcd(b, a % b)
   }
-  
+
   static func + (l: Rational, r: Rational) -> Rational {
     Rational(l.num * r.den + r.num * l.den, l.den * r.den)
   }
@@ -106,7 +106,7 @@ struct Rational: CustomStringConvertible {
   static func *= (l: inout Rational, r: Rational) {
     l = l * r
   }
-  
+
   var isZero: Bool { num == 0 }
   var isPositive: Bool { num > 0 }
   var floor: Int { num / den }
@@ -130,7 +130,7 @@ func minPressesJoltages(_ buttons: [Int], target: [Int]) -> Int? {
   var pivotCols = [Int]()
   var row = 0
   var col = 0
-  
+
   // First, get to RREF
   while row < m && col < n {
     let pivotRow = (row..<m).first { !matrix[$0][col].isZero }
@@ -156,32 +156,31 @@ func minPressesJoltages(_ buttons: [Int], target: [Int]) -> Int? {
   for r in row..<m {
     if !matrix[r][n].isZero { return nil }
   }
-  
+
   let freeCols = (0..<n).filter { !pivotCols.contains($0) }
-  
+
   // Compute bounds for free variables
   let maxTarget = target.max() ?? 1
   var lowerBounds = freeCols.map { _ in 0 }
   var upperBounds = freeCols.map { _ in maxTarget }
-  
+
   for (i, _) in pivotCols.enumerated() {
     let rhs = matrix[i][n]
     var posCoeffs: [(Int, Rational)] = []
     var negCoeffs: [(Int, Rational)] = []
-    
+
     for (j, fc) in freeCols.enumerated() {
       let c = matrix[i][fc]
-      if c.isPositive { posCoeffs.append((j, c)) }
-      else if c.isNegative { negCoeffs.append((j, c)) }
+      if c.isPositive { posCoeffs.append((j, c)) } else if c.isNegative { negCoeffs.append((j, c)) }
     }
-    
+
     // Upper bounds: valid when all free var coefficients are non-negative
     if !posCoeffs.isEmpty && negCoeffs.isEmpty && !rhs.isNegative {
       for (j, c) in posCoeffs {
         upperBounds[j] = min(upperBounds[j], (rhs / c).floor)
       }
     }
-    
+
     // Lower bounds: only valid when exactly one free variable has negative coefficient
     // (otherwise the constraint is a combined constraint on multiple variables)
     if posCoeffs.isEmpty && negCoeffs.count == 1 && rhs.isNegative {
@@ -191,14 +190,14 @@ func minPressesJoltages(_ buttons: [Int], target: [Int]) -> Int? {
       lowerBounds[j] = max(lowerBounds[j], lb)
     }
   }
-  
+
   // Ensure bounds are valid
   for j in 0..<freeCols.count {
     upperBounds[j] = max(lowerBounds[j], upperBounds[j])
   }
-  
+
   var best: Int? = nil
-  
+
   func enumerate(_ idx: Int, _ freeVals: [Int]) {
     if idx == freeCols.count {
       var total = freeVals.reduce(0, +)
@@ -218,7 +217,7 @@ func minPressesJoltages(_ buttons: [Int], target: [Int]) -> Int? {
       enumerate(idx + 1, freeVals + [v])
     }
   }
-  
+
   enumerate(0, [])
   return best
 }
@@ -230,4 +229,4 @@ let raw = readInput()
 let machines = parseInput(raw)
 print(solve(machines))
 
-print(solve2(machines)) // 11825 < 19502 < x < 20052 && x != 19506 && x != 18577
+print(solve2(machines))  // 11825 < 19502 < x < 20052 && x != 19506 && x != 18577
