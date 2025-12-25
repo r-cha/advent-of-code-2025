@@ -9,46 +9,46 @@ func readInput() -> String {
 }
 
 struct Position: Hashable {
-    let x: Int
-    let y: Int
+  let x: Int
+  let y: Int
 }
 
 struct Shape {
-    let variants: [[Position]]  // precomputed rotations/flips, normalized to origin
-    var cellCount: Int {
-        return variants.first?.count ?? 0
-    }
+  let variants: [[Position]]  // precomputed rotations/flips, normalized to origin
+  var cellCount: Int {
+    return variants.first?.count ?? 0
+  }
 }
 
 struct Region {
-    let width: Int
-    let height: Int
-    let targets: [Int] // number of desired presents of each shape
+  let width: Int
+  let height: Int
+  let targets: [Int]  // number of desired presents of each shape
 }
 
 func normalize(_ shape: [Position]) -> [Position] {
-    let minX = shape.map { $0.x }.min() ?? 0
-    let minY = shape.map { $0.y }.min() ?? 0
-    return shape.map { Position(x: $0.x - minX, y: $0.y - minY) }.sorted { (a, b) in
-        if a.x == b.x {
-            return a.y < b.y
-        }
-        return a.x < b.x
+  let minX = shape.map { $0.x }.min() ?? 0
+  let minY = shape.map { $0.y }.min() ?? 0
+  return shape.map { Position(x: $0.x - minX, y: $0.y - minY) }.sorted { (a, b) in
+    if a.x == b.x {
+      return a.y < b.y
     }
+    return a.x < b.x
+  }
 }
 
 func generateVariants(_ shape: [Position]) -> Shape {
-    var variants = Set<[Position]>()
-    var current = shape
-    for _ in 0..<4 {
-        // Rotate 90 degrees
-        current = current.map { Position(x: $0.y, y: -$0.x) }
-        variants.insert(normalize(current))
-        // Flip horizontally
-        let flipped = current.map { Position(x: -$0.x, y: $0.y) }
-        variants.insert(normalize(flipped))
-    }
-    return Shape(variants: Array(variants))
+  var variants = Set<[Position]>()
+  var current = shape
+  for _ in 0..<4 {
+    // Rotate 90 degrees
+    current = current.map { Position(x: $0.y, y: -$0.x) }
+    variants.insert(normalize(current))
+    // Flip horizontally
+    let flipped = current.map { Position(x: -$0.x, y: $0.y) }
+    variants.insert(normalize(flipped))
+  }
+  return Shape(variants: Array(variants))
 }
 
 func parseInput(_ raw: String) -> (shapes: [Shape], regions: [Region]) {
@@ -71,20 +71,16 @@ func parseInput(_ raw: String) -> (shapes: [Shape], regions: [Region]) {
   return (shapes, regions)
 }
 
-func dlx(_ grid: [[Bool]], remaining: [Int], shapes: [Shape]) -> Bool {
-  ... // Implementation of Dancing Links algorithm for exact cover
-  return false // Placeholder
-}
-
 func solve(shapes: [Shape], regions: [Region]) -> Int {
   return regions.map({ region in
-      let grid = Array(repeating: Array(repeating: false, count: region.width), count: region.height)
-      return solve(grid: grid, remaining: region.targets, shapes: shapes) ? 1 : 0
+    let avail = region.width * region.height
+    let sumAreas = region.targets.enumerated().map({ i, target in
+      target * shapes[i].cellCount
+    }).reduce(0, +)
+    return sumAreas < avail ? 1 : 0
   }).reduce(0, +)
 }
-
 
 let raw = readInput()
 let (shapes, regions) = parseInput(raw)
 print(solve(shapes: shapes, regions: regions))
-
